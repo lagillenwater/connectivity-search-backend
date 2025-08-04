@@ -29,3 +29,6 @@ urlpatterns = [
     path('v1/metapaths/random-nodes/', views.QueryMetapathsRandomNodesView.as_view(), name="metapaths-random-nodes"),
     path('v1/paths/source/<int:source>/target/<int:target>/metapath/<str:metapath>/', views.QueryPathsView.as_view(), name="paths"),
 ]
+
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+urlpatterns += staticfiles_urlpatterns()
