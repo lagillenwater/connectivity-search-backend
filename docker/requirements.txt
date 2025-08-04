@@ -1,0 +1,22 @@
+# setuptools==64.0.3
+django-cors-headers==3.2.1
+django-extensions==2.2.9
+django-filter==2.3.0
+django==3.0.7
+djangorestframework==3.11.0
+graphviz==0.20.3
+gunicorn==20.0.4
+ipykernel
+markdown==3.2.2
+neo4j==5.28.2
+neo4j-rust-ext==5.28.2.0
+numpy
+pandas
+psycopg2==2.8.5
+pydot==1.4.1
+pyyaml==5.3.1
+requests==2.24.0
+scipy
+sqlparse==0.3.1
+hetnetpy @ git+https://github.com/hetio/hetnetpy@aa16e6a7092c039a6b175a73a35c006e53acee20
+hetmatpy @ git+https://github.com/hetio/hetmatpy@bc36aa9859c43a1a5fb22808cd6eb952ef9d497c
