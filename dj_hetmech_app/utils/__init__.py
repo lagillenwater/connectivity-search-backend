@@ -1,4 +1,5 @@
 import functools
+import os
 
 
 def timed(func):
@@ -236,5 +237,6 @@ def metapath_from_abbrev(abbreviation):
 @functools.lru_cache()
 def get_neo4j_driver():
     from neo4j import GraphDatabase
-    driver = GraphDatabase.driver('bolt://neo4j.het.io')
+    neo4j_host = os.environ.get('NEO4J_HOST', 'neo4j.het.io')
+    driver = GraphDatabase.driver('bolt://' + neo4j_host)
     return driver
