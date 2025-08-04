@@ -1,0 +1,61 @@
+volumes:
+  neo4j_data:
+  postgres_data:
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    ports:
+      - "8015:8001"
+    env_file:
+      - .env
+    environment:
+      - WEB_WORKERS=8
+      - POSTGRES_HOST=db
+      - NEO4J_HOST=neo4j
+    # depends_on:
+    #   db:
+    #     condition: service_healthy
+    #   neo4j:
+    #     condition: service_healthy
+
+  db:
+    image: postgres:15
+    shm_size: '256mb'
+    # the initial db load takes ~30 minutes; 360 retries * 10s intervals = ~1 hour
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /var/lib/postgresql/data/db_dump_loaded && pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 360
+    env_file:
+      - .env
+    environment:
+      - "POSTGRES_DUMP_LOCATION=/db-dumps/connectivity-search-pg_dump.sql.gz"
+      # - "POSTGRES_DUMP_LOCATION=/db-dumps/connectivity-search.dump"
+    volumes:
+      - ./services/postgres/load-db-dump.sh:/docker-entrypoint-initdb.d/load-db-dump.sh
+      - ./data/postgres/:/db-dumps/
+      - postgres_data:/var/lib/postgresql/data/
+
+  neo4j:
+    image: dhimmel/hetionet:hetionet-v1.0_neo4j-3.5.12
+    # build:
+    #   context: ./services/neo4j/
+    shm_size: '256mb'
+    stop_grace_period: 120s
+    # neo4j takes ~5-8 minutes to initially download + load, so 10s * 60 retries = 10 minutes should suffice
+    healthcheck:
+      test: ["CMD-SHELL", "test '200' = $( curl -s -o /dev/null -w '%{http_code}' http://localhost:7474 ) || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 60
+    environment:
+      - "NEO4J_dbms_memory_heap_initial__size=2G"
+      - "NEO4J_dbms_memory_heap_max__size=6G"
+      - "NEO4J_dbms_memory_pagecache_size=1024M"
+    volumes:
+      # - ./data/neo4j/:/db-dumps/
+      - neo4j_data:/data/

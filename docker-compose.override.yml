@@ -1,0 +1,13 @@
+services:
+  api:
+    environment:
+      - DJANGO_DEBUG=True
+
+  db:
+    ports:
+      - "5460:5432"
+
+  neo4j:
+    ports:
+      - "7474:7474" # neo4j browser
+      - "7687:7687" # bolt

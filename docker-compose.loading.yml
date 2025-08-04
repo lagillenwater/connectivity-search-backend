@@ -1,0 +1,17 @@
+# this file is intended to override the docker-compose.yml file;
+# it makes the health checks more lenient to allow for longer startup times
+# while we're loading data into postgres and neo4j
+services:
+  db:
+    # the initial db load takes ~30 minutes
+    healthcheck:
+      interval: 10s
+      timeout: 5s
+      retries: 600
+
+  neo4j:
+    # neo4j 3.5.x takes ~5-8 minutes to initially download + start up from the old graph dump
+    healthcheck:
+      interval: 10s
+      timeout: 5s
+      retries: 120

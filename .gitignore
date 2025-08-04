@@ -18,3 +18,6 @@ __pycache__
 # System files
 *~
 .vscode
+
+# other large data files acquired from external sources
+/data
