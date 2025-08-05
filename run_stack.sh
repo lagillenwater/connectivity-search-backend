@@ -37,7 +37,8 @@ replace_env_var_with_secret() {
     local length="${2:-16}"
     if grep -q -e "^${field}=$" .env; then
         echo "Filling in missing ${field} value in .env"
-        sed -i '' -E "s|^(${field}=)(.*)|\1$(openssl rand -hex ${length})|g" .env
+        sed -E "s|^(${field}=)(.*)|\1$(openssl rand -hex ${length})|g" .env > .env.tmp
+        mv .env.tmp .env
     fi
 }
 
