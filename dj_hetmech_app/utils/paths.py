@@ -78,17 +78,31 @@ def get_pathcount_record(metapath, source_id, target_id, path_count, raw_dwpc):
     target_degree = get_node_degree(target_id, metapath[-1])
     import numpy
     dwpc = numpy.arcsinh(raw_dwpc / metapath_record.dwpc_raw_mean)
-    dgp_record = DegreeGroupedPermutation.objects.get(
-        metapath=metapath_record, source_degree=source_degree, target_degree=target_degree)
-    hetmatpy_info = {
-        'dwpc': dwpc,
-        'n': dgp_record.n_dwpcs,
-        'nnz': dgp_record.n_nonzero_dwpcs,
-        'mean_nz': dgp_record.nonzero_mean,
-        'sd_nz': dgp_record.nonzero_sd,
-    }
-    from hetmatpy.pipeline import calculate_p_value
-    p_value = calculate_p_value(hetmatpy_info)
+
+    try:
+        dgp_record = DegreeGroupedPermutation.objects.get(
+            metapath=metapath_record, source_degree=source_degree, target_degree=target_degree)
+    except DegreeGroupedPermutation.DoesNotExist:
+        logging.warning(
+            f'DegreeGroupedPermutation record does not exist for metapath={metapath_record.abbreviation}, '
+            f'source_degree={source_degree}, target_degree={target_degree}. '
+            f'Returning PathCount with null p-value.'
+        )
+        dgp_record = None
+
+    if dgp_record:
+        hetmatpy_info = {
+            'dwpc': dwpc,
+            'n': dgp_record.n_dwpcs,
+            'nnz': dgp_record.n_nonzero_dwpcs,
+            'mean_nz': dgp_record.nonzero_mean,
+            'sd_nz': dgp_record.nonzero_sd,
+        }
+        from hetmatpy.pipeline import calculate_p_value
+        p_value = calculate_p_value(hetmatpy_info)
+    else:
+        p_value = None
+
     pathcount_record = PathCount(
         metapath=metapath_record,
         source=Node.objects.get(pk=source_id),
@@ -140,7 +154,10 @@ def get_paths(metapath, source_id, target_id, limit=None):
     if pathcount_record:
         import math
         adj_p_value = pathcount_record.get_adjusted_p_value()
-        metapath_score = -math.log10(adj_p_value)
+        if adj_p_value is not None:
+            metapath_score = -math.log10(adj_p_value)
+        else:
+            metapath_score = None
 
     neo4j_node_ids = set()
     neo4j_rel_ids = set()

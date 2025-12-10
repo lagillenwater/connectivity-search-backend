@@ -90,13 +90,27 @@ class PathCountDgpSerializer(serializers.ModelSerializer):
         return record.get_adjusted_p_value()
 
     def to_representation(self, instance):
+        from dj_hetmech_app.models import DegreeGroupedPermutation
         reversed_ = vars(instance).get('reversed')
         instance.metapath.reversed = reversed_
-        instance.dgp.reversed = reversed_
+
+        has_dgp = False
+        try:
+            if instance.dgp is not None:
+                instance.dgp.reversed = reversed_
+                has_dgp = True
+        except (DegreeGroupedPermutation.DoesNotExist, AttributeError):
+            pass
+
         data = super().to_representation(instance)
         data['reversed'] = reversed_
         data.update(data.pop('metapath'))
-        data.update(data.pop('dgp'))
+
+        if has_dgp:
+            data.update(data.pop('dgp'))
+        else:
+            data.pop('dgp', None)
+
         data['cypher_query'] = self.get_cypher(instance)
         return data
 
