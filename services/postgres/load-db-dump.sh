@@ -42,7 +42,7 @@ SELECT pg_reload_conf();
 VACUUM ANALYZE;
 EOF
 
-echo "✅ Postgres database dump loaded successfully."
+echo "Postgres database dump loaded successfully."
 
 # touch the sentinel file to indicate that the dump has been loaded
 touch /var/lib/postgresql/data/db_dump_loaded
